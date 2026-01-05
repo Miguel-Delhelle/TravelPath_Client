@@ -1,4 +1,18 @@
 package fr.um.ico.mobile.travelpath.Main.Fragment;
 
-public class TopBarFragment {
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import fr.um.ico.mobile.travelpath.R;
+
+public class TopBarFragment extends Fragment {
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_top_bar, container, false);
+    }
 }
