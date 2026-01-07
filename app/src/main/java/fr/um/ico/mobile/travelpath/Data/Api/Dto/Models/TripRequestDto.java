@@ -1,4 +1,4 @@
-package fr.um.ico.mobile.travelpath.Model;
+package fr.um.ico.mobile.travelpath.Data.Api.Dto.Models;
 
 public class TripRequestDto {
     private Double lat;

@@ -1,4 +1,4 @@
-package fr.um.ico.mobile.travelpath.Utils;
+package fr.um.ico.mobile.travelpath.domain.Utils;
 
 import android.Manifest;
 import android.app.Activity;

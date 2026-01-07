@@ -1,4 +1,4 @@
-package fr.um.ico.mobile.travelpath.Utils;
+package fr.um.ico.mobile.travelpath.Data.Local;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import java.util.HashMap;
 import java.util.Map;
 
-import fr.um.ico.mobile.travelpath.Model.UserPreferencesDto;
+import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.UserPreferencesDto;
 
 public class UserPrefsManager {
     private static final String PREF_NAME = "TravelPath_User_Prefs";

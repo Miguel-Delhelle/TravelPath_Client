@@ -7,7 +7,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_map"
-        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.MapFragment"
+        android:name="fr.um.ico.mobile.travelpath.ui.map.MapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -17,7 +17,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_top_bar"
-        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.TopBarFragment"
+        android:name="fr.um.ico.mobile.travelpath.ui.trip.TopBarFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="10dp"
@@ -27,7 +27,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_bottom_bar"
-        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.BottomBarFragment"
+        android:name="fr.um.ico.mobile.travelpath.ui.trip.TripControlFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="10dp"

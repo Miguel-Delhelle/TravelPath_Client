@@ -1,10 +1,10 @@
-package fr.um.ico.mobile.travelpath.Network;
+package fr.um.ico.mobile.travelpath.Data.Api;
 
 import java.util.List;
-import fr.um.ico.mobile.travelpath.Model.MoodRequestDto;
-import fr.um.ico.mobile.travelpath.Model.PoiDto;
-import fr.um.ico.mobile.travelpath.Model.TripDto;
-import fr.um.ico.mobile.travelpath.Model.TripRequestDto;
+import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.MoodRequestDto;
+import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.PoiDto;
+import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.TripDto;
+import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.TripRequestDto;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
