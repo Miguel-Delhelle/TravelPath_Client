@@ -1,48 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="160dp"
-    android:layout_height="match_parent"
-    android:layout_margin="4dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="8dp"
-        android:background="#FFFFFF">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
 
         <TextView
             android:id="@+id/tvStepNumber"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:gravity="center"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:text="1"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#7F1734"
-            android:background="@drawable/circle_background" />
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="#7F1734" />
 
-        <TextView
-            android:id="@+id/tvPoiName"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="Nom du Lieu"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:gravity="center_vertical"/>
-
-        <TextView
-            android:id="@+id/tvDistance"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="à 500m"
-            android:textSize="12sp"
-            android:textColor="#666666"/>
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp">
+
+            <TextView
+                android:id="@+id/tvPoiName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nom du Lieu"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/tvDistance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Musée • 12€"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:ellipsize="end"
+                android:maxLines="1"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            app:tint="#CCCCCC"
+            android:rotation="90"
+            android:contentDescription="Drag handle" />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

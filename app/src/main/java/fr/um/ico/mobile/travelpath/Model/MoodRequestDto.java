@@ -26,5 +26,53 @@ public class MoodRequestDto {
         this.userPreferences = userPreferences;
     }
 
+    public Double getLat() {
+        return lat;
+    }
+
+    public void setLat(Double lat) {
+        this.lat = lat;
+    }
+
+    public Double getLon() {
+        return lon;
+    }
+
+    public void setLon(Double lon) {
+        this.lon = lon;
+    }
+
+    public String getMood() {
+        return mood;
+    }
+
+    public void setMood(String mood) {
+        this.mood = mood;
+    }
+
+    public String getWeather() {
+        return weather;
+    }
+
+    public void setWeather(String weather) {
+        this.weather = weather;
+    }
+
+    public String getLocalTime() {
+        return localTime;
+    }
+
+    public void setLocalTime(String localTime) {
+        this.localTime = localTime;
+    }
+
+    public UserPreferencesDto getUserPreferences() {
+        return userPreferences;
+    }
+
+    public void setUserPreferences(UserPreferencesDto userPreferences) {
+        this.userPreferences = userPreferences;
+    }
+
     // Getters / Setters...
 }

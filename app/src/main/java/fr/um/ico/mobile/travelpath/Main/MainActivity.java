@@ -7,7 +7,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.um.ico.mobile.travelpath.Main.Fragment.BottomBarFragment;
@@ -20,64 +19,65 @@ import fr.um.ico.mobile.travelpath.Utils.LocationHelper;
 
 public class MainActivity extends AppCompatActivity implements BottomBarFragment.MapUpdateListener, TopBarFragment.OnStepActionListener {
 
-    private LocationHelper locationHelper; // On le garde ici pour la gestion des permissions callback
-    private List<Long> currentBlacklist = new ArrayList<>();
+    private LocationHelper locationHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Juste pour gérer les retours de permissions Android
         locationHelper = new LocationHelper(this);
     }
 
-    // --- Implémentation de l'interface du Fragment ---
-
+    // --- BottomBarFragment dit : "J'ai un nouveau trajet !" ---
     @Override
     public void onRouteFound(List<PoiDto> pois, double userLat, double userLon) {
-        // 1. Update Map (Existant)
+        // 1. Mise à jour de la Carte
         MapFragment mapFrag = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map);
-        if (mapFrag != null) mapFrag.displayRoute(pois, userLat, userLon);
+        if (mapFrag != null) {
+            mapFrag.displayRoute(pois, userLat, userLon);
+            mapFrag.centerOnUser(userLat, userLon); // Optionnel : Recentrer
+        }
 
-        // 2. Update TopBar (Nouveau)
+        // 2. Mise à jour de la TopBar (Carrousel des étapes)
         TopBarFragment topFrag = (TopBarFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_top_bar);
-        if (topFrag != null) topFrag.updateSteps(pois);
+        if (topFrag != null) {
+            topFrag.updateSteps(pois);
+        }
     }
 
+    // --- Bouton Option cliqué ---
     @Override
     public void onUserOptionClicked() {
         startActivity(new Intent(this, UserActivity.class));
     }
 
+    // --- TopBarFragment dit : "L'utilisateur a swipé ce lieu (ID)" ---
+    @Override
+    public void onStepSwiped(long osmIdToBan) {
+        // On délègue la logique de recalcul au BottomFragment qui connaît le contexte (Mood, etc.)
+        BottomBarFragment bottomFrag = (BottomBarFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_bottom_bar);
+
+        if (bottomFrag != null) {
+            // On reconstruit un objet POI minimal pour dire "Bannis celui-là"
+            PoiDto itemToBan = new PoiDto();
+            itemToBan.setId(osmIdToBan);
+
+            bottomFrag.recalculateWithBanned(itemToBan);
+        } else {
+            Toast.makeText(this, "Erreur interne : Fragment introuvable", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     // --- Gestion Permissions ---
-    // Obligé de rester dans l'Activity car c'est elle qui reçoit le résultat système
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission GPS accordée, réessayez !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Permission GPS accordée !", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "GPS requis pour fonctionner", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "GPS requis", Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    @Override
-    public void onStepSwiped(long osmIdToBan) {
-        // 1. On ajoute à la liste noire
-        currentBlacklist.add(osmIdToBan);
-        Toast.makeText(this, "Lieu supprimé ! Recalcul...", Toast.LENGTH_SHORT).show();
-
-        // 2. On demande au BottomFragment de relancer la recherche
-        // (Idéalement, déplace la méthode performSearch dans MainActivity ou rend la publique dans le fragment)
-        // Pour le MVP rapide, castons le fragment :
-        BottomBarFragment bottomFrag = (BottomBarFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_bottom_bar);
-        if (bottomFrag != null) {
-            bottomFrag.performSearchWithBlacklist(currentBlacklist);
-        }
-
     }
 }

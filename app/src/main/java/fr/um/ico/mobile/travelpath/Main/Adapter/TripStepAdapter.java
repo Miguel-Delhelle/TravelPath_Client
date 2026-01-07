@@ -34,11 +34,13 @@ public class TripStepAdapter extends RecyclerView.Adapter<TripStepAdapter.StepVi
     @Override
     public void onBindViewHolder(@NonNull StepViewHolder holder, int position) {
         PoiDto step = steps.get(position);
+
         holder.tvName.setText(step.getName());
         holder.tvNumber.setText(String.valueOf(position + 1));
 
-        // Calcul distance simple (si tu as la pos précédente, sinon met placeholder)
-        holder.tvDistance.setText(step.getCategory());
+        // Affichage combiné propre
+        String subText = step.getCategory() + " • " + step.getEstimatedCost() + "€";
+        holder.tvDistance.setText(subText);
     }
 
     @Override

@@ -6,21 +6,22 @@
     android:layout_height="match_parent">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_top_bar"
-        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.TopBarFragment"
+        android:id="@+id/fragment_map"
+        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.MapFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_map"
-        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.MapFragment"
+        android:id="@+id/fragment_top_bar"
+        android:name="fr.um.ico.mobile.travelpath.Main.Fragment.TopBarFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/fragment_top_bar"
-        app:layout_constraintBottom_toTopOf="@id/fragment_bottom_bar"
+        android:layout_height="wrap_content"
+        android:elevation="10dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -29,6 +30,7 @@
         android:name="fr.um.ico.mobile.travelpath.Main.Fragment.BottomBarFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
