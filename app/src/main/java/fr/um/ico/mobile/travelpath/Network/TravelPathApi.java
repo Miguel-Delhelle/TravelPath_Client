@@ -3,6 +3,7 @@ package fr.um.ico.mobile.travelpath.Network;
 import java.util.List;
 import fr.um.ico.mobile.travelpath.Model.MoodRequestDto;
 import fr.um.ico.mobile.travelpath.Model.PoiDto;
+import fr.um.ico.mobile.travelpath.Model.TripDto;
 import fr.um.ico.mobile.travelpath.Model.TripRequestDto;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -17,4 +18,7 @@ public interface TravelPathApi {
     // L'endpoint "Manuel" (Profil uniquement)
     @POST("api/trip/search")
     Call<List<PoiDto>> searchManual(@Body TripRequestDto request);
+
+    @POST("api/trip/recalculate")
+    Call<TripDto> recalculateTrip(@Body TripDto trip);
 }

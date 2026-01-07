@@ -1,14 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
+    android:background="#FFFFFF"
     android:padding="16dp"
-    android:background="#E0E0E0">
+    android:gravity="center"
+    android:weightSum="3">
+
+    <ImageButton
+        android:id="@+id/btn_left_placeholder"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="0.5"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_help"
+        android:contentDescription="Info"
+        app:tint="#888888" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.2" />
 
     <Button
         android:id="@+id/btn_search_path"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Rechercher des lieux" />
+        android:layout_weight="1.6"
+        android:text="GO !"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#7F1734" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.2" />
+
+    <ImageButton
+        android:id="@+id/btn_user_options"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="0.5"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_manage"
+        android:contentDescription="Options"
+        app:tint="#7F1734" />
+
 </LinearLayout>
