@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("com.github.MKergall:osmbonuspack:6.9.0")
 
     // NETWORKING
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

@@ -3,4 +3,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="travelpath_bordeaux">#7F1734</color>
+    <color name="travelpath_purple">#5E266E</color>
 </resources>
