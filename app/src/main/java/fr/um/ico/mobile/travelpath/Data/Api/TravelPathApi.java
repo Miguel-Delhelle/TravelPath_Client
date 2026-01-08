@@ -16,6 +16,7 @@ public interface TravelPathApi {
     Call<List<PoiDto>> searchByMood(@Body MoodRequestDto request);
 
     // L'endpoint "Manuel" (Profil uniquement)
+    @Deprecated(since = "ancien endpoint, totalement useless désormais")
     @POST("api/trip/search")
     Call<List<PoiDto>> searchManual(@Body TripRequestDto request);
 

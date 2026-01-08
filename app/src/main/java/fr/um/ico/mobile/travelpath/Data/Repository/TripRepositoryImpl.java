@@ -28,17 +28,14 @@ public class TripRepositoryImpl implements ITripRepository {
             @Override
             public void onResponse(Call<List<PoiDto>> call, Response<List<PoiDto>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // UTILISATION DE FACTORY DTO VIA STREAM
                     List<PointOfInterest> domainList = response.body().stream()
                             .map(FactoryDto::from)
                             .collect(Collectors.toList());
-
                     callback.onSuccess(domainList);
                 } else {
                     callback.onError("Erreur serveur : " + response.code());
                 }
             }
-
             @Override
             public void onFailure(Call<List<PoiDto>> call, Throwable t) {
                 callback.onError("Erreur réseau : " + t.getMessage());
@@ -47,18 +44,13 @@ public class TripRepositoryImpl implements ITripRepository {
     }
 
     @Override
-    public void recalculateTrip(TripDto tripDto, Callback<List<PointOfInterest>> callback) {
+    public void recalculateTrip(TripDto tripDto, Callback<TripDto> callback) {
         api.recalculateTrip(tripDto).enqueue(new retrofit2.Callback<TripDto>() {
-
             @Override
             public void onResponse(Call<TripDto> call, Response<TripDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<PoiDto> dtoList = response.body().getPath();
-                    List<PointOfInterest> domainList = dtoList.stream()
-                            .map(FactoryDto::from)
-                            .collect(Collectors.toList());
-
-                    callback.onSuccess(domainList);
+                    // MODIFICATION : On renvoie TOUT le body (qui contient le contexte mis à jour)
+                    callback.onSuccess(response.body());
                 } else {
                     callback.onError("Erreur recalcul : " + response.code());
                 }

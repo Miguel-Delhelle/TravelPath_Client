@@ -1,11 +1,14 @@
 package fr.um.ico.mobile.travelpath.ui.main;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import java.util.List;
 
 import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest;
@@ -28,6 +31,20 @@ public class MainActivity extends AppCompatActivity implements TripControlFragme
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         locationHelper = new LocationHelper(this);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            centerMapOnUser();
+        }
+
+    }
+    private void centerMapOnUser() {
+        locationHelper.getLastLocation((lat, lon) -> {
+            MapFragment mapFrag = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map);
+            if (mapFrag != null) {
+                // C'est ici qu'on force le centrage au lancement de l'app
+                mapFrag.centerOnUser(lat, lon);
+            }
+        });
     }
 
     @Override
@@ -35,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements TripControlFragme
         MapFragment mapFrag = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map);
         if (mapFrag != null) {
             mapFrag.displayRoute(pois, userLat, userLon);
-            mapFrag.centerOnUser(userLat, userLon);
+            //mapFrag.centerOnUser(userLat, userLon);
         }
 
         TopBarFragment topFrag = (TopBarFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_top_bar);

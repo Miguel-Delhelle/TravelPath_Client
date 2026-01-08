@@ -8,12 +8,9 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// --- Imports Clean Architecture ---
 import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest;
 import fr.um.ico.mobile.travelpath.domain.repository.ITripRepository;
-
-// --- Imports Data / DTOs ---
-import fr.um.ico.mobile.travelpath.Data.Api.Dto.FactoryDto; // Indispensable
+import fr.um.ico.mobile.travelpath.Data.Api.Dto.FactoryDto;
 import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.MoodRequestDto;
 import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.PoiDto;
 import fr.um.ico.mobile.travelpath.Data.Api.Dto.Models.TripDto;
@@ -25,12 +22,13 @@ public class TripViewModel extends ViewModel {
     private final ITripRepository repository;
     private final UserPrefsManager prefsManager;
 
-    // On utilise PointOfInterest (Domain) pour l'UI
     private final MutableLiveData<List<PointOfInterest>> route = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
+    // C'est cette variable qui garde la mémoire de l'état (Blacklist etc.)
     private MoodRequestDto lastRequest;
+
     private List<PointOfInterest> currentPath;
 
     public TripViewModel(ITripRepository repository, UserPrefsManager prefsManager) {
@@ -73,22 +71,44 @@ public class TripViewModel extends ViewModel {
 
         isLoading.setValue(true);
 
-        // 1. Conversion Domain (PointOfInterest) -> DTO (PoiDto) via Factory
-        // Nécessaire pour renvoyer les données au serveur
+        // 1. On prépare la liste du chemin actuel
         List<PoiDto> pathDtos = currentPath.stream()
-                .map(FactoryDto::from) // Utilisation propre de la Factory
+                .map(FactoryDto::from)
                 .collect(Collectors.toList());
 
-        PoiDto bannedDto = new PoiDto();
-        bannedDto.setId(bannedId);
+        // 2. CORRECTION ICI : On retrouve l'objet complet dans la liste pour avoir ses coordonnées
+        PoiDto bannedDto = currentPath.stream()
+                .filter(poi -> poi.getId().equals(bannedId)) // On cherche celui qui a l'ID
+                .findFirst()
+                .map(FactoryDto::from) // On le convertit en DTO complet (avec lat/lon)
+                .orElse(null);
+
+        if (bannedDto == null) {
+            bannedDto = new PoiDto();
+            bannedDto.setId(bannedId);
+        }
 
         TripDto tripDto = new TripDto(pathDtos, bannedDto, lastRequest);
 
-        repository.recalculateTrip(tripDto, new ITripRepository.Callback<List<PointOfInterest>>() {
+        // ATTENTION : Le Callback attend maintenant un TripDto complet
+        repository.recalculateTrip(tripDto, new ITripRepository.Callback<TripDto>() {
             @Override
-            public void onSuccess(List<PointOfInterest> result) {
-                currentPath = result;
-                route.setValue(result);
+            public void onSuccess(TripDto result) {
+                // 1. MISE A JOUR DU CONTEXTE (CRUCIAL !!)
+                // Le serveur nous renvoie le contexte avec la blacklist augmentée [A, B...]
+                // On l'enregistre pour la prochaine fois.
+                if (result.getContext() != null) {
+                    lastRequest = result.getContext();
+                }
+
+                // 2. Mise à jour de l'UI
+                List<PointOfInterest> newPathDomain = result.getPath().stream()
+                        .map(FactoryDto::from)
+                        .collect(Collectors.toList());
+
+                currentPath = newPathDomain;
+                route.setValue(newPathDomain);
+
                 isLoading.setValue(false);
             }
 
