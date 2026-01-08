@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import fr.um.ico.mobile.travelpath.ui.trip.adapter.TripStepAdapter;
-import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest; // IMPORT DU DOMAINE
+import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest;
 import fr.um.ico.mobile.travelpath.databinding.FragmentTopBarBinding;
 
 public class TopBarFragment extends Fragment {
@@ -24,6 +24,7 @@ public class TopBarFragment extends Fragment {
 
     public interface OnStepActionListener {
         void onStepSwiped(long osmIdToBan);
+        void onStepClicked(int position); // <--- NOUVEAU
     }
 
     @Override
@@ -63,6 +64,11 @@ public class TopBarFragment extends Fragment {
         binding.rvTripSteps.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvTripSteps.setAdapter(adapter);
 
+        // --- CLIC SUR ITEM LISTE ---
+        adapter.setOnStepClickListener(position -> {
+            if (listener != null) listener.onStepClicked(position);
+        });
+
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder vh, @NonNull RecyclerView.ViewHolder target) { return false; }
@@ -70,8 +76,7 @@ public class TopBarFragment extends Fragment {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                PointOfInterest item = adapter.getStepAt(position); // TYPE CORRIGÉ
-
+                PointOfInterest item = adapter.getStepAt(position);
                 if (item != null && item.getId() != null) {
                     if (listener != null) listener.onStepSwiped(item.getId());
                 } else {
@@ -87,12 +92,17 @@ public class TopBarFragment extends Fragment {
             binding.tvNextStepName.setText("Aucun trajet");
             return;
         }
-
         PointOfInterest nextStep = pois.get(0);
         binding.tvNextStepName.setText(nextStep.getName());
         binding.tvNextStepInfo.setText(nextStep.getCategory() + " • " + nextStep.getEstimatedCost() + "€");
-
         adapter.setSteps(pois);
+    }
+
+    // --- NOUVEAU : SCROLL VERS L'ITEM ---
+    public void scrollToStep(int position) {
+        if (binding != null) {
+            binding.rvTripSteps.smoothScrollToPosition(position);
+        }
     }
 
     @Override

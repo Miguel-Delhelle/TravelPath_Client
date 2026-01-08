@@ -6,12 +6,23 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
-import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest; // IMPORT DU DOMAINE
+import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest;
 import fr.um.ico.mobile.travelpath.databinding.ItemTripStepBinding;
 
 public class TripStepAdapter extends RecyclerView.Adapter<TripStepAdapter.StepViewHolder> {
 
-    private List<PointOfInterest> steps = new ArrayList<>(); // TYPE CORRIGÉ
+    private List<PointOfInterest> steps = new ArrayList<>();
+
+    // --- 1. Interface de Clic ---
+    private OnStepClickListener listener;
+
+    public interface OnStepClickListener {
+        void onStepClick(int position); // On renvoie l'index pour le retrouver sur la map
+    }
+
+    public void setOnStepClickListener(OnStepClickListener listener) {
+        this.listener = listener;
+    }
 
     public void setSteps(List<PointOfInterest> newSteps) {
         this.steps = newSteps;
@@ -32,7 +43,7 @@ public class TripStepAdapter extends RecyclerView.Adapter<TripStepAdapter.StepVi
     @Override
     public void onBindViewHolder(@NonNull StepViewHolder holder, int position) {
         PointOfInterest step = steps.get(position);
-        holder.bind(step, position);
+        holder.bind(step, position, listener);
     }
 
     @Override
@@ -46,12 +57,16 @@ public class TripStepAdapter extends RecyclerView.Adapter<TripStepAdapter.StepVi
             this.binding = binding;
         }
 
-        public void bind(PointOfInterest step, int position) {
+        public void bind(PointOfInterest step, int position, OnStepClickListener listener) {
             binding.tvPoiName.setText(step.getName());
             binding.tvStepNumber.setText(String.valueOf(position + 1));
-            // Affichage propre
             String subText = step.getCategory() + " • " + step.getEstimatedCost() + "€";
             binding.tvDistance.setText(subText);
+
+            // --- Clic sur l'item ---
+            itemView.setOnClickListener(v -> {
+                if (listener != null) listener.onStepClick(position);
+            });
         }
     }
 }

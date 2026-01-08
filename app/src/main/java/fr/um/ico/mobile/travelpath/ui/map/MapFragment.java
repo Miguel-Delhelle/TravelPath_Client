@@ -42,14 +42,25 @@ import fr.um.ico.mobile.travelpath.domain.model.PointOfInterest;
 public class MapFragment extends Fragment {
 
     private FragmentMapBinding binding;
-    private MyLocationNewOverlay locationOverlay; // Le point bleu
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(); // Pour le calcul de route en fond
-    private final Handler mainHandler = new Handler(Looper.getMainLooper()); // Pour revenir sur l'UI
+    private MyLocationNewOverlay locationOverlay;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    // --- NOUVEAU : Gestion des marqueurs ---
+    private final List<Marker> stepMarkers = new ArrayList<>();
+    private OnMarkerClickListener markerListener;
+
+    public interface OnMarkerClickListener {
+        void onMarkerClicked(int position);
+    }
+
+    public void setOnMarkerClickListener(OnMarkerClickListener listener) {
+        this.markerListener = listener;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Configuration indispensable pour OSMDroid (User Agent)
         Configuration.getInstance().setUserAgentValue(requireContext().getPackageName());
         binding = FragmentMapBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -62,27 +73,15 @@ public class MapFragment extends Fragment {
         setupLocationOverlay();
     }
 
-    // --- 1. CONFIGURATION VISUELLE & PERFORMANCES ---
     private void setupMapUI() {
-        // --- OPTIMISATIONS CRITIQUES (Anti-Lag) ---
-        // 1. Force l'utilisation du GPU (Hardware Acceleration)
         binding.map.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-
-        // 2. Rend le texte des tuiles plus net sur les écrans haute densité
         binding.map.setTilesScaledToDpi(true);
-
-        // 3. Empêche OSM de calculer le monde en boucle (Gros gain de FPS en rotation)
         binding.map.setHorizontalMapRepetitionEnabled(false);
         binding.map.setVerticalMapRepetitionEnabled(false);
-
-        // 4. Optimisation du scroll
         binding.map.setHasTransientState(true);
+        binding.map.setMultiTouchControls(true);
+        binding.map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
-        // --- UX / Gestures ---
-        binding.map.setMultiTouchControls(true); // Pincement pour zoomer
-        binding.map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER); // Pas de boutons moches
-
-        // Rotation avec deux doigts
         RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(binding.map);
         rotationGestureOverlay.setEnabled(true);
         binding.map.getOverlays().add(rotationGestureOverlay);
@@ -91,82 +90,62 @@ public class MapFragment extends Fragment {
         mapController.setZoom(15.0);
     }
 
-    // --- 2. LOCALISATION LIVE (Point bleu) ---
     private void setupLocationOverlay() {
         GpsMyLocationProvider provider = new GpsMyLocationProvider(requireContext());
-        // Augmente la fluidité de la mise à jour
         provider.addLocationSource(android.location.LocationManager.GPS_PROVIDER);
         provider.addLocationSource(android.location.LocationManager.NETWORK_PROVIDER);
 
         locationOverlay = new MyLocationNewOverlay(provider, binding.map);
-
-        // --- 1. LE LOOK (Adieu le bonhomme jaune) ---
         Bitmap blueDot = getBitmapFromVectorDrawable(R.drawable.ic_my_location_dot);
         if (blueDot != null) {
-            locationOverlay.setPersonIcon(blueDot);    // Quand tu es à l'arrêt
-            locationOverlay.setDirectionIcon(blueDot); // Quand tu bouges (ou une flèche si tu préfères)
+            locationOverlay.setPersonIcon(blueDot);
+            locationOverlay.setDirectionIcon(blueDot);
         }
-
-        // --- 2. LE COMPORTEMENT (Mode Waze) ---
         locationOverlay.enableMyLocation();
-        locationOverlay.enableFollowLocation(); // La caméra suit le point
-        locationOverlay.setDrawAccuracyEnabled(false); // On cache le gros cercle de précision (plus propre)
+        locationOverlay.enableFollowLocation();
+        locationOverlay.setDrawAccuracyEnabled(false);
 
         binding.map.getOverlays().add(locationOverlay);
-
-        // --- 3. ZOOM INITIAL (Niveau Rue) ---
-        // On attend que la map soit prête pour zoomer et centrer
         binding.map.getController().setZoom(18.0);
     }
 
-    // --- 3. ROUTING & AFFICHAGE ---
     public void displayRoute(List<PointOfInterest> pois, double startLat, double startLon) {
         if (binding == null) return;
-
-        // On arrête de suivre l'utilisateur pour qu'il puisse explorer le trajet
         locationOverlay.disableFollowLocation();
 
-        // Nettoyage intelligent : on enlève markers et routes, mais on garde le point bleu et la rotation
-        binding.map.getOverlays().removeIf(overlay ->
-                overlay instanceof Marker || overlay instanceof Polyline
-        );
+        // 1. Nettoyage complet
+        binding.map.getOverlays().removeIf(overlay -> overlay instanceof Marker || overlay instanceof Polyline);
+        stepMarkers.clear(); // Important : on vide la liste des références
 
-        // A. Préparation des waypoints
         ArrayList<GeoPoint> waypoints = new ArrayList<>();
-        waypoints.add(new GeoPoint(startLat, startLon)); // Départ (User)
+        waypoints.add(new GeoPoint(startLat, startLon));
 
-        int stepIndex = 1;
+        // 2. Création des marqueurs avec index
+        int stepIndex = 0;
         for (PointOfInterest poi : pois) {
             GeoPoint point = new GeoPoint(poi.getLat(), poi.getLon());
             waypoints.add(point);
-            addMarker(point, stepIndex + ". " + poi.getName(), poi.getCategory());
+            // On passe l'index pour le callback
+            addMarker(point, (stepIndex + 1) + ". " + poi.getName(), poi.getCategory(), stepIndex);
             stepIndex++;
         }
 
-        // B. Calcul asynchrone via OSRM
+        // 3. Calcul Route (Reste identique)
         executor.execute(() -> {
             try {
                 RoadManager roadManager = new OSRMRoadManager(requireContext(), "TravelPathAgent");
-                ((OSRMRoadManager) roadManager).setMean(OSRMRoadManager.MEAN_BY_FOOT); // Mode Piéton
-
+                ((OSRMRoadManager) roadManager).setMean(OSRMRoadManager.MEAN_BY_FOOT);
                 Road road = roadManager.getRoad(waypoints);
 
                 mainHandler.post(() -> {
                     if (binding != null && road.mStatus == Road.STATUS_OK) {
                         Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
                         roadOverlay.setWidth(15.0f);
+                        roadOverlay.getOutlinePaint().setColor(ContextCompat.getColor(requireContext(), R.color.travelpath_purple));
 
-                        // Couleur du tracé : Violet TravelPath (#5E266E)
-                        roadOverlay.getOutlinePaint().setColor(ContextCompat.getColor(requireContext(),R.color.travelpath_purple));
-
-                        // Ajout en fond (index 0) pour que les markers soient au-dessus
                         binding.map.getOverlays().add(0, roadOverlay);
                         binding.map.invalidate();
-
-                        // Zoom automatique sur le trajet
                         binding.map.zoomToBoundingBox(road.mBoundingBox, true);
-                    } else {
-                        Toast.makeText(getContext(), "Impossible de calculer l'itinéraire", Toast.LENGTH_SHORT).show();
                     }
                 });
             } catch (Exception e) {
@@ -175,41 +154,50 @@ public class MapFragment extends Fragment {
         });
     }
 
-    private void addMarker(GeoPoint pos, String title, String snippet) {
+    // Modifié pour gérer l'index et le clic
+    private void addMarker(GeoPoint pos, String title, String snippet, int index) {
         Marker marker = new Marker(binding.map);
         marker.setPosition(pos);
         marker.setTitle(title);
         marker.setSnippet(snippet);
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-        // Utilisation directe du Drawable XML (déjà coloré en #5E266E dans le XML)
         Drawable icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_location_pin);
-        if (icon != null) {
-            marker.setIcon(icon);
-        }
+        if (icon != null) marker.setIcon(icon);
 
-        // Comportement au clic : focus + bulle d'info
+        // --- CLIC SUR MARKER ---
         marker.setOnMarkerClickListener((m, mapView) -> {
             m.showInfoWindow();
             mapView.getController().animateTo(m.getPosition());
+            // On notifie l'activité
+            if (markerListener != null) {
+                markerListener.onMarkerClicked(index);
+            }
             return true;
         });
 
         binding.map.getOverlays().add(marker);
+        stepMarkers.add(marker); // On sauvegarde la référence
     }
 
+    // --- Appelée par l'Activité quand on clique sur la liste ---
+    public void focusOnStep(int index) {
+        if (index >= 0 && index < stepMarkers.size()) {
+            Marker target = stepMarkers.get(index);
+            // Animation fluide
+            binding.map.getController().animateTo(target.getPosition());
+            target.showInfoWindow(); // Ouvre la bulle
+        }
+    }
+
+    // ... (getBitmapFromVectorDrawable, centerOnUser, lifecycle... inchangés) ...
     private Bitmap getBitmapFromVectorDrawable(int drawableId) {
         Drawable drawable = ContextCompat.getDrawable(requireContext(), drawableId);
         if (drawable == null) return null;
-
-        Bitmap bitmap = Bitmap.createBitmap(
-                drawable.getIntrinsicWidth(),
-                drawable.getIntrinsicHeight(),
-                Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
-
         return bitmap;
     }
 

@@ -1,0 +1,32 @@
+stages:
+  - build
+
+variables:
+  # Optimisation Gradle
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+build-android:
+  stage: build
+  image: mobiledevops/android-sdk-image:latest # Image communautaire fiable avec SDK Android
+  tags:
+    - docker # Assure-toi d'avoir un runner docker dispo (les shared runners gitlab le font)
+  
+  before_script:
+    - echo "Préparation de la compilation Android..."
+    - export ANDROID_SDK_ROOT=/opt/android-sdk-linux
+    - cd android # <--- IMPORTANT : Entre dans le dossier android si c'est un sous-dossier
+    - chmod +x gradlew 
+
+  script:
+    - echo "Compilation de la version Debug..."
+    # assembleDebug crée l'APK signé avec une clé de debug (suffisant pour tester)
+    - ./gradlew assembleDebug
+
+  artifacts:
+    paths:
+      # Le chemin standard de sortie des APKs
+      - android/app/build/outputs/apk/debug/app-debug.apk
+    expire_in: 1 week # On garde l'APK 1 semaine
+  
+  only:
+    - master

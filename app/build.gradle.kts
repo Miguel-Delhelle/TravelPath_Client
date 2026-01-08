@@ -10,14 +10,16 @@ android {
         applicationId = "fr.um.ico.mobile.travelpath"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        val pipelineId = System.getenv("CI_PIPELINE_IID")
+        versionCode = pipelineId?.toIntOrNull() ?: 1
+        versionName = "1.0.${pipelineId ?: "dev"}"
+        // ---------------------------------------------------
 
         // Important pour JUnit 5
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // 1. ACTIVER VIEWBINDING (Adieu findViewById)
+    // 1. ACTIVER VIEWBINDING
     buildFeatures {
         viewBinding = true
     }
@@ -35,12 +37,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    // 2. CONFIGURATION JUNIT 5
-    testOptions {
-        unitTests.all {
-        }
     }
 }
 
