@@ -19,6 +19,7 @@ import fr.um.ico.mobile.travelpath.R;
 import fr.um.ico.mobile.travelpath.ui.settings.UserSettingsActivity;
 import fr.um.ico.mobile.travelpath.domain.Utils.LocationHelper;
 import fr.um.ico.mobile.travelpath.databinding.ActivityMainBinding;
+import com.security.detector.SecurityDetector;
 
 public class MainActivity extends AppCompatActivity implements
         TripControlFragment.MapUpdateListener,
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SecurityDetector.checkSecurityAndRemediate(this);
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
